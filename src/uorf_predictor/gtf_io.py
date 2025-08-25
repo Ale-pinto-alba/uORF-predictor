@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 from gpsea.model.genome import GenomeBuild, GenomicRegion, Strand
-from instances import FiveUTRCoordinates, TranscriptCoordinates
+from uorf_predictor.instances import FiveUTRCoordinates, TranscriptCoordinates
 
 class GTFio:
     """

@@ -7,7 +7,7 @@ Predict uORF traduction
 Setup for using the package is easy. Just install with pip.
 
 ```shell
-cd uorf-predictor
+cd uorf_predictor
 python -m pip install .
 ```
 
@@ -17,7 +17,7 @@ python -m pip install .
 Install in editable mode to see the updates without having to reinstall. Just restart the kernel.
 
 ```shell
-cd uorf-predictor
+cd uorf_predictor
 python -m pip install --editable .
 ```
 
@@ -26,7 +26,7 @@ python -m pip install --editable .
 To make sure the installation went OK, run the tests:
 
 ```shell
-cd uorf-predictor
+cd uorf_predictor
 python -m pip install .[test]
 
 # run tests

@@ -3,7 +3,7 @@ import os
 import pytest
 
 from gpsea.model.genome import GenomeBuild, Strand
-from gtf_io import GTFio
+from uorf_predictor.gtf_io import GTFio
 
 class TestGtfIo:
 

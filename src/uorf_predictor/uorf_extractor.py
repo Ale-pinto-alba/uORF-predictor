@@ -3,7 +3,7 @@ import typing
 import requests
 
 from gpsea.model.genome import Region
-from instances import FiveUTRCoordinates, UORFCoordinates
+from uorf_predictor.instances import FiveUTRCoordinates, UORFCoordinates
 
 
 def fetch_cdna_from_ensembl(transcript_id: str, timeout: float = 30.,) -> str:

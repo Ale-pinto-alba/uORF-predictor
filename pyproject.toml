@@ -3,15 +3,15 @@ requires = ["setuptools>=65.6.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "uorf-predictor"
-description = "Paquete para predecir la traducción de uORFs en base a características genómicas y Ribo-seq"
+name = "uorf_predictor"
+description = "Paquete para predecir la traducción de uORFs en base a características genómicas"
 authors = [
     { name = "Alejandro Pinto Alba", email = "alejandropintoalba@gmail.com" }
 ]
 
 readme = "README.md"
 requires-python = ">=3.10"
-keywords = ["uorf", "ribo-seq", "library"]
+keywords = ["uorf", "library"]
 license = { file = "LICENSE" }
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -41,14 +41,13 @@ docs = [
 ]
 
 [project.urls]
-homepage = "https://github.com/Ale-pinto-alba/utrfx"
-repository = "https://github.com/Ale-pinto-alba/utrfx.git"
-documentation = "https://github.com/Ale-pinto-alba/utrfx"
-bugtracker = "https://github.com/Ale-pinto-alba/utrfx/issues"
+homepage = "https://github.com/Ale-pinto-alba/uorf_predictor"
+repository = "https://github.com/Ale-pinto-alba/uorf_predictor.git"
+documentation = "https://github.com/Ale-pinto-alba/uorf_predictor"
+bugtracker = "https://github.com/Ale-pinto-alba/uorf_predictor/issues"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
-zip-safe = false
 
 [tool.setuptools.dynamic]
-version = { attr = "utrfx.__version__" }
+version = { attr = "uorf_predictor.__version__" }

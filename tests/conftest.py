@@ -1,7 +1,8 @@
 import os
 import pytest
 
-from gpsea.model.genome import GenomeBuild, GRCh38
+from gpsea.model.genome import GenomeBuild, GRCh38, GenomicRegion, Strand
+from uorf_predictor.instances import FiveUTRCoordinates
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -37,3 +38,57 @@ def fpath_data_dir(fpath_test_dir: str) -> str:
 @pytest.fixture(scope="session")
 def genome_build() -> GenomeBuild:
     return GRCh38
+
+@pytest.fixture(scope="session")
+def hr_five_utr(
+    genome_build: GenomeBuild
+) -> FiveUTRCoordinates:
+    """
+    5'UTR Genomic region corresponding to one of the transcripts of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`).
+
+    Both Genomic Regions were obtained from the chromosome 8 GTF file.
+
+    see here: https://www.ensembl.org/Homo_sapiens/Transcript/Summary?db=core;g=ENSG00000168453;r=8:22114419-22133384;t=ENST00000381418
+    """
+    contig = genome_build.contig_by_name("8")
+    assert contig is not None
+
+    return FiveUTRCoordinates(
+        regions=(
+            GenomicRegion(
+                contig=contig,
+                start=22_130_427,
+                end=22_131_010,
+                strand=Strand.POSITIVE
+                ).with_strand(other=Strand.NEGATIVE),
+            GenomicRegion(
+                contig=contig,
+                start=22_129_170,
+                end=22_129_210,
+                strand=Strand.POSITIVE
+                ).with_strand(other=Strand.NEGATIVE),
+        )
+    )
+    
+
+@pytest.fixture(scope="session")
+def hr_five_utr_sequence() -> str:
+    """
+    5'UTR cDNA sequence of the transcript of the HR gene (ENSEMBL transcript ID: `ENST00000381418.9`) taken directly from
+    the ENSEMBL website.
+    
+    see here: https://www.ensembl.org/Homo_sapiens/Transcript/Sequence_cDNA?db=core;g=ENSG00000168453;r=8:22114419-22133384;t=ENST00000381418.
+    """
+    return "AGTTGCGCTTCTGGCGATGGCGATCAGAGGTCCTGCTGCGCTCTCCGCCG" \
+        + "CGCTCTACCTCCATTAGCCGCGCTGCGCGGTGCTGCGCCCTCGCCGGTGC" \
+        + "CTCTCTCCTGGGTCCCAGGATCGGCCCCCACCATCCAGGCACGACCCCCT" \
+        + "TCCCCGGCCCCTCGGCCTTTCCCCCAACTCGGCCATCTCCGACCCGGGGC" \
+        + "GCGTGTTCCCCCCGGCCCGGCGCCTTCTCTCCCTCCGGGGGCACCCGCTC" \
+        + "CCTAGCCCCGGCCCGGCCCTCCCCGCGGCGCAGCACGGAGTCTCGGCGTC" \
+        + "CCATGGCGCAACCTACGGCCTCGGCCCAGAAGCTGGTGCGGCCGATCCGC" \
+        + "GCCGTGTGCCGCATCCTGCAGATCCCGGAGTCCGACCCCTCCAACCTGCG" \
+        + "GCCCTAGAGCGCCCCCGCCGCCCCGGGGGAAGGAGAGCGCGAGCGCGCTG" \
+        + "AGCAGACAGAGCGGGAGAACGCGTCCTCGCCCGCCGGCCGGGAGGCCCCG" \
+        + "GAGCTGGCCCATGGGGAGCAGGCGCCCGGTGCCGGCCACGACGACCGCCA" \
+        + "CCGCCCGCGCCGCGACCGGCCGGTGAAGCCCAGGGACCCCCCTCTGGGAG" \
+        + "AGCCCCATGAGGGCAGGAGAGTG"
