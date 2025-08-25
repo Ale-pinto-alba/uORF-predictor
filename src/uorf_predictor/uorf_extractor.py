@@ -41,37 +41,34 @@ def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.C
     :param five_sequence: 5'UTR cDNA sequence.
     """
     uorfs = []
-    start_codons = ["ATG", "CTG", "GTG", "ACG", "TTG"]
     start_position = 0
 
     while start_position < len(five_sequence) - 2:
-        codon = five_sequence[start_position:start_position + 3]
-        if codon in start_codons:
-            found_stop = False
-            start_codon = codon
+        start_index = five_sequence.find("ATG", start_position)
+        if start_index < 0:
+            break  # No more uORF in the remaining sequence
 
-            for i in range(start_position + 3, len(five_sequence) - 2, 3):  
-                stop_codon = five_sequence[i:i + 3]
-                if stop_codon in ["TAA", "TAG", "TGA"]:
-                    stop_index = i + 3
-                    found_stop = True
-                    break
+        found_stop = False
+        for i in range(start_index, len(five_sequence) - 2, 3):  
+            codon = five_sequence[i:i + 3]
+            if codon in ["TAA", "TAG", "TGA"]:
+                stop_index = i + 3
+                found_stop = True
+                break
 
-            if found_stop:
-                uorfs.append(UORFCoordinates(
-                    five_utr=five_utr,
-                    uorf=Region(start=start_position, end=stop_index),
-                    ouorf= False,
-                    start_codon= start_codon,
-                ))
-                start_position = stop_index  
-            else:
-                uorfs.append(UORFCoordinates(
-                    five_utr=five_utr,
-                    uorf=Region(start=start_position, end=len(five_sequence)),
-                    ouorf= True,
-                    start_codon= start_codon,
-                ))
-                start_position = start_position + 1  
+        if found_stop:
+            uorfs.append(UORFCoordinates(
+                five_utr=five_utr,
+                uorf=Region(start=start_index, end=stop_index),
+                ouorf= False,
+            ))
+            start_position = stop_index  
+        else:
+            uorfs.append(UORFCoordinates(
+                five_utr=five_utr,
+                uorf=Region(start=start_index, end=len(five_sequence)),
+                ouorf= True,
+            ))
+            start_position = start_index + 1  
 
     return uorfs
