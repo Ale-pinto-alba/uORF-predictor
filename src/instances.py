@@ -65,12 +65,14 @@ class UORFCoordinates:
     :param transcript: transcript with its corresponding identifier and 5'UTR Genomic Region(s).
     :param uorf: uORF region marked by its start and end nucleotide.
     :param ouorf: boolean indicating if the uORF overlaps with the mORF.
+    :param start_codon: str with the start codon.
     """
     def __init__(
         self,
         five_utr: FiveUTRCoordinates,
         uorf: Region,
         ouorf: bool,
+        start_codon: str,
     ):
         assert isinstance(five_utr, FiveUTRCoordinates)
         self._five_utr = five_utr
@@ -78,6 +80,8 @@ class UORFCoordinates:
         self._uorf = uorf
         assert isinstance(ouorf, bool)
         self._ouorf = ouorf
+        assert isinstance(start_codon, str)
+        self._start_codon = start_codon
 
     @property
     def uorf(self) -> Region:
@@ -86,6 +90,10 @@ class UORFCoordinates:
     @property
     def ouorf(self) -> bool:
         return self._ouorf
+    
+    @property
+    def start_codon(self) -> str:
+        return self._start_codon
 
     def __len__(self) -> int:
         return len(self._uorf.end - self._uorf.start)  
@@ -97,7 +105,7 @@ class UORFCoordinates:
                 and self._ouorf == other._ouorf)
     
     def __repr__(self) -> str:
-        return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf}, ouORF= {self._ouorf})"
+        return f"UORFCoordinates(Five_UTRs= {len(self._five_utr.regions)}, uORF= {self._uorf}, ouORF= {self._ouorf}, start codon= {self._start_codon})"
 
 
 class TxperGene:
