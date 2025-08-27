@@ -1,4 +1,5 @@
 import math
+from statistics import stdev
 
 from Bio.Data import CodonTable
 from collections import defaultdict
@@ -76,65 +77,95 @@ def kozak_sequence_strength(five_sequence: str, uorf: UORFCoordinates) -> int:
     else:
         return 0
     
+class Codon_features:
 
-def codon_adaptation_index(uorf_sequence: str) -> float:
+    def __init__(
+        self, 
+        uorf_sequence: str,
+    ):
+        self._uorf_sequence = uorf_sequence
+        self._weights = self._obtain_relative_weights()
+
+    def _obtain_relative_weights(self) -> list:
+            """
+            Retrieve the relative weights of the codons.
+
+            Krishnamurthy Subramanian, Bryan Payne, Felix Feyertag, David Alvarez-Ponce, 
+            The Codon Statistics Database: A Database of Codon Usage Bias, Molecular Biology and Evolution, Volume 39, Issue 8, August 2022, msac157, 
+            https://doi.org/10.1093/molbev/msac157
+            """
+            codon_frequency = {
+                "AAA": 25.1901, "AAG": 31.4481, "AAT": 17.0444, "AAC": 18.3501,
+                "ACA": 15.3184, "ACC": 18.4242, "ACG": 5.9236, "ACT": 13.5182,
+                "AGA": 12.3146, "AGC": 19.9075, "AGG": 12.1033, "AGT": 12.6984,
+                "ATA": 7.5636, "ATC": 19.3821, "ATT": 15.7146, "ATG": 21.0300,
+
+                "CAA": 12.8031, "CAG": 34.5800, "CAT": 11.1677, "CAC": 15.0600,
+                "CCA": 17.5929, "CCC": 20.4863, "CCG": 7.4462, "CCT": 18.2084,
+                "CGA": 6.0584, "CGC": 10.3363, "CGG": 11.3963, "CGT": 4.4912,
+                "CTA": 7.1547, "CTC": 19.0061, "CTG": 38.7259, "CTT": 13.3863,
+
+            
+                "GAA": 30.4087, "GAG": 40.0424, "GAT": 22.0502, "GAC": 24.8107,
+                "GCA": 16.1205, "GCC": 27.8499, "GCG": 7.6763, "GCT": 18.3994,
+                "GGA": 16.6903, "GGC": 22.2317, "GGG": 16.4639, "GGT": 10.6731,
+                "GTA": 7.1527, "GTC": 13.9037, "GTG": 27.0722, "GTT": 10.9735,
+
+                "TAA": 0.4856, "TAG": 0.3822, "TAT": 11.8554, "TAC": 14.3091,
+                "TCA": 12.9278, "TCC": 17.7956, "TCG": 4.5676, "TCT": 15.7052, 
+                "TGA": 0.8420, "TGC": 12.3082, "TGG": 12.2384, "TGT": 10.7211, 
+                "TTA": 7.8952, "TTC": 19.1588, "TTG": 12.9418, "TTT": 16.9475,
+            }
+            # Normalize the table to relative weigths
+            standard_table = CodonTable.unambiguous_dna_by_name["Standard"]
+            codon_to_aa = standard_table.forward_table 
+
+            aa_to_codons = defaultdict(list)
+            for codon, freq in codon_frequency.items():
+                if codon in codon_to_aa:
+                    aa = codon_to_aa[codon]
+                    aa_to_codons[aa].append((codon, freq))
+
+            cai_weights = {}
+            for aa, codon_list in aa_to_codons.items():
+                max_freq = max(freq for _, freq in codon_list)
+                for codon, freq in codon_list:
+                    cai_weights[codon] = freq / max_freq
+
+            codons = [self._uorf_sequence[i:i+3] for i in range(0, len(self._uorf_sequence), 3)]
+
+            weights = []
+            for codon in codons:
+                weight = cai_weights.get(codon, 0.0)
+                weights.append(weight)
+
+            if not weights:
+                return 0.0
+
+            return weights
+    
+    def codon_adaptation_index(self) -> float:
         """
-        Retrieve the codon adaptation index.
-
-        Krishnamurthy Subramanian, Bryan Payne, Felix Feyertag, David Alvarez-Ponce, 
-        The Codon Statistics Database: A Database of Codon Usage Bias, Molecular Biology and Evolution, Volume 39, Issue 8, August 2022, msac157, 
-        https://doi.org/10.1093/molbev/msac157
+        Calculate the Codon Adaptation Index (CAI) as geometric mean of codon weights.
         """
-        codon_frequency = {
-            "AAA": 25.1901, "AAG": 31.4481, "AAT": 17.0444, "AAC": 18.3501,
-            "ACA": 15.3184, "ACC": 18.4242, "ACG": 5.9236, "ACT": 13.5182,
-            "AGA": 12.3146, "AGC": 19.9075, "AGG": 12.1033, "AGT": 12.6984,
-            "ATA": 7.5636, "ATC": 19.3821, "ATT": 15.7146, "ATG": 21.0300,
-
-            "CAA": 12.8031, "CAG": 34.5800, "CAT": 11.1677, "CAC": 15.0600,
-            "CCA": 17.5929, "CCC": 20.4863, "CCG": 7.4462, "CCT": 18.2084,
-            "CGA": 6.0584, "CGC": 10.3363, "CGG": 11.3963, "CGT": 4.4912,
-            "CTA": 7.1547, "CTC": 19.0061, "CTG": 38.7259, "CTT": 13.3863,
-
-        
-            "GAA": 30.4087, "GAG": 40.0424, "GAT": 22.0502, "GAC": 24.8107,
-            "GCA": 16.1205, "GCC": 27.8499, "GCG": 7.6763, "GCT": 18.3994,
-            "GGA": 16.6903, "GGC": 22.2317, "GGG": 16.4639, "GGT": 10.6731,
-            "GTA": 7.1527, "GTC": 13.9037, "GTG": 27.0722, "GTT": 10.9735,
-
-            "TAA": 0.4856, "TAG": 0.3822, "TAT": 11.8554, "TAC": 14.3091,
-            "TCA": 12.9278, "TCC": 17.7956, "TCG": 4.5676, "TCT": 15.7052, 
-            "TGA": 0.8420, "TGC": 12.3082, "TGG": 12.2384, "TGT": 10.7211, 
-            "TTA": 7.8952, "TTC": 19.1588, "TTG": 12.9418, "TTT": 16.9475,
-        }
-        # Normalize the table to relative weigths
-        standard_table = CodonTable.unambiguous_dna_by_name["Standard"]
-        codon_to_aa = standard_table.forward_table 
-
-        aa_to_codons = defaultdict(list)
-        for codon, freq in codon_frequency.items():
-            if codon in codon_to_aa:
-                aa = codon_to_aa[codon]
-                aa_to_codons[aa].append((codon, freq))
-
-        cai_weights = {}
-        for aa, codon_list in aa_to_codons.items():
-            max_freq = max(freq for _, freq in codon_list)
-            for codon, freq in codon_list:
-                cai_weights[codon] = freq / max_freq
-
-        codons = [uorf_sequence[i:i+3] for i in range(0, len(uorf_sequence), 3)]
-
-        weights = []
-        for codon in codons:
-            weight = cai_weights.get(codon, 0.0)
-            weights.append(weight)
-
-        if not weights:
+        log_weights = [math.log(w) for w in self._weights if w > 0]
+        if not log_weights:
             return 0.0
+        return math.exp(sum(log_weights) / len(log_weights))
+    
+    def codon_frequency_std(self) -> float:
+        """
+        Calculate the standard deviation of the codon usage weights.
+        """
+        return stdev(self._weights)
 
-        return math.exp(sum(weights) / len(weights))
 
-seq = "ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG"
-score = codon_adaptation_index(seq)
-print(f"Average normalized codon usage: {score:.4f}")
+def codon_count(uorf_sequence: str) -> int:
+    """
+    Count the number of codon in the uORF.
+    Only for non-overlapping uORFs.
+    """
+    if len(uorf_sequence) % 3 == 0:
+        return (len(uorf_sequence) / 3)
+    else:
+        return 0

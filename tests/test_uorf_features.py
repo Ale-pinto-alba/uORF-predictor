@@ -3,7 +3,7 @@ import typing
 
 from gpsea.model.genome import Region
 from uorf_predictor.instances import FiveUTRCoordinates, UORFCoordinates
-from uorf_predictor.uorf_features import gc_content, intercistronic_distance, cap_five_to_uorf_distance, kozak_sequence_strength, codon_adaptation_index
+from uorf_predictor.uorf_features import gc_content, intercistronic_distance, cap_five_to_uorf_distance, kozak_sequence_strength, Codon_features, codon_count
 
 
 @pytest.mark.parametrize(
@@ -95,21 +95,63 @@ def test_kozak_sequence_strength(
 
     assert kozak_sequence_strength(five_sequence=hr_five_utr_sequence, uorf=uorf) == expected
 
+class TestCodonFeatures:
+
+    @pytest.mark.parametrize(
+            "region, expected",
+            [
+                ((Region(start=16, end=67)), pytest.approx(expected=0.61, rel=0.1)),
+                ((Region(start=302, end=407)), pytest.approx(expected=0.79, rel=0.1)),
+                ((Region(start=510, end=576)), pytest.approx(expected=0.73, rel=0.1)),
+                ((Region(start=606, end=623)), pytest.approx(expected=0.84, rel=0.1)),
+            ]
+    )
+    def test_codon_adaptation_index(
+        self,
+        hr_five_utr_sequence: str,
+        region: Region,
+        expected: typing.Optional[int],
+    ):
+        uorf = hr_five_utr_sequence[region.start:region.end]
+        codons = Codon_features(uorf_sequence=uorf)
+
+        assert codons.codon_adaptation_index() == expected
+
+    @pytest.mark.parametrize(
+            "region, expected",
+            [
+                ((Region(start=16, end=67)), pytest.approx(expected=0.32, rel=0.1)),
+                ((Region(start=302, end=407)), pytest.approx(expected=0.29, rel=0.1)),
+                ((Region(start=510, end=576)), pytest.approx(expected=0.32, rel=0.1)),
+                ((Region(start=606, end=623)), pytest.approx(expected=0.39, rel=0.1)),
+            ]
+    )
+    def test_codon_adaptation_index(
+        self,
+        hr_five_utr_sequence: str,
+        region: Region,
+        expected: typing.Optional[int],
+    ):
+        uorf = hr_five_utr_sequence[region.start:region.end]
+        codons = Codon_features(uorf_sequence=uorf)
+
+        assert codons.codon_frequency_std() == expected
+
 
 @pytest.mark.parametrize(
         "region, expected",
         [
-            ((Region(start=16, end=67)), pytest.approx(expected=1.9, rel=0.1)),
-            ((Region(start=302, end=407)), pytest.approx(expected=2.2, rel=0.1)),
-            ((Region(start=510, end=576)), pytest.approx(expected=2.1, rel=0.1)),
-            ((Region(start=606, end=623)), pytest.approx(expected=2.0, rel=0.1)),
+            ((Region(start=16, end=67)), 17),
+            ((Region(start=302, end=407)), 35),
+            ((Region(start=510, end=576)), 22),
+            ((Region(start=606, end=623)), 0),
         ]
 )
-def test_codon_adaptation_index(
+def test_codon_count(
     hr_five_utr_sequence: str,
     region: Region,
     expected: typing.Optional[int],
 ):
     uorf = hr_five_utr_sequence[region.start:region.end]
 
-    assert codon_adaptation_index(uorf_sequence= uorf) == expected
+    assert codon_count(uorf_sequence= uorf) == expected
