@@ -99,10 +99,10 @@ def test_kozak_sequence_strength(
 @pytest.mark.parametrize(
         "region, expected",
         [
-            ((Region(start=16, end=67)), pytest.approx(expected=0.64, rel=0.1)),
-            ((Region(start=302, end=407)), pytest.approx(expected=0.83, rel=0.1)),
-            ((Region(start=510, end=576)), pytest.approx(expected=0.77, rel=0.1)),
-            ((Region(start=606, end=623)), pytest.approx(expected=0.71, rel=0.1)),
+            ((Region(start=16, end=67)), pytest.approx(expected=1.9, rel=0.1)),
+            ((Region(start=302, end=407)), pytest.approx(expected=2.2, rel=0.1)),
+            ((Region(start=510, end=576)), pytest.approx(expected=2.1, rel=0.1)),
+            ((Region(start=606, end=623)), pytest.approx(expected=2.0, rel=0.1)),
         ]
 )
 def test_codon_adaptation_index(

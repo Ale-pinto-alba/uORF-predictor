@@ -1,3 +1,5 @@
+import math
+
 from Bio.Data import CodonTable
 from collections import defaultdict
 
@@ -131,7 +133,7 @@ def codon_adaptation_index(uorf_sequence: str) -> float:
         if not weights:
             return 0.0
 
-        return sum(weights) / len(weights)
+        return math.exp(sum(weights) / len(weights))
 
 seq = "ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG"
 score = codon_adaptation_index(seq)
