@@ -40,9 +40,12 @@ class RNA_folding:
     
     def _uorf_start_codon_context(self) -> str:
         """
-        Get the start codon context of the uORF (30 nucleotides up- and downstream).
+        Get the start codon context of the uORF (30 nucleotides up- and downstream if possible).
         """
-        return self._sequence[self._uorf._uorf.start - 30: self._uorf._uorf.start - 30]
+        start = self._uorf._uorf.start
+        upstream = max(0, start - 30)
+        downstream = min(len(self._sequence), start + 30)
+        return self._sequence[upstream:downstream]
     
     def _uorf_sequence_generator(self) -> str:
         """
