@@ -2,7 +2,7 @@ import typing
 
 import requests
 
-from gpsea.model.genome import Region
+from gpsea.model.genome import Region, Strand
 from uorf_predictor.instances import FiveUTRCoordinates, UORFCoordinates
 
 
@@ -33,42 +33,52 @@ def get_five_prime_sequence(cdna_sequence: str, five_utrs: FiveUTRCoordinates) -
     return cdna_sequence[:len(five_utrs)]
 
 
-def uorf_extractor(five_utr: FiveUTRCoordinates, five_sequence: str) -> typing.Collection[UORFCoordinates]:
+def obtain_uorf_in_five_utr(five_utrs: FiveUTRCoordinates, start_uorf: int, end_uorf: int) -> UORFCoordinates:
     """
-    Take the cDNA nucleotide sequence of a transcript 5'UTR region to extract the uORFs sequences available.
+    Map the genomic coordinates of the uORF into the 5'UTR of the transcript to obtain the relative position within the sequence.
 
-    :param five_utr: list of Genomic Regions corresponding to the 5'UTRs regions.
-    :param five_sequence: 5'UTR cDNA sequence.
+    :param five_utrs: 5'UTR Genomic regions of the transcript.
+    :start_uorf: Start position of the uORF.
+    :end_uorf: End position of the uORF.
     """
-    uorfs = []
-    start_position = 0
+    five_utrs_tuple = [(region.start, region.end) for region in five_utrs.regions]
+    gene_strand = five_utrs.regions[0].strand
 
-    while start_position < len(five_sequence) - 2:
-        start_index = five_sequence.find("ATG", start_position)
-        if start_index < 0:
-            break  # No more uORF in the remaining sequence
+    uorf_length = end_uorf - start_uorf
+    variant_cdna_pos = None
 
-        found_stop = False
-        for i in range(start_index, len(five_sequence) - 2, 3):  
-            codon = five_sequence[i:i + 3]
-            if codon in ["TAA", "TAG", "TGA"]:
-                stop_index = i + 3
-                found_stop = True
-                break
+    if gene_strand == Strand.POSITIVE:
+        cdna_pos = 0
+        for start, end in sorted(five_utrs_tuple):
+            five_utr_region_length = end - start
+            if start <= start_uorf <= end:
+                variant_cdna_pos = cdna_pos + (start_uorf - start + 1)
+            cdna_pos += five_utr_region_length
+        
+        if variant_cdna_pos is not None:
+            ouorf = not any(start <= end_uorf < end for start, end in five_utrs_tuple)
+            return UORFCoordinates(
+                        five_utr= five_utrs,
+                        uorf= Region(start= variant_cdna_pos, end= variant_cdna_pos + uorf_length),
+                        ouorf= ouorf,
+                    )
+    else:
+        five_utrs_tuple = [
+            (region.start_on_strand(Strand.POSITIVE), region.end_on_strand(Strand.POSITIVE))
+            for region in five_utrs.regions
+        ]
 
-        if found_stop:
-            uorfs.append(UORFCoordinates(
-                five_utr=five_utr,
-                uorf=Region(start=start_index, end=stop_index),
-                ouorf= False,
-            ))
-            start_position = stop_index  
-        else:
-            uorfs.append(UORFCoordinates(
-                five_utr=five_utr,
-                uorf=Region(start=start_index, end=len(five_sequence)),
-                ouorf= True,
-            ))
-            start_position = start_index + 1  
-
-    return uorfs
+        cdna_pos = 0
+        for start, end in sorted(five_utrs_tuple, reverse=True):
+            five_utr_region_length = end - start
+            if start <= start_uorf <= end:
+                    variant_cdna_pos = cdna_pos + (end - start_uorf + 1)
+            cdna_pos += five_utr_region_length
+            
+            if variant_cdna_pos is not None:
+                ouorf = not any(start <= end_uorf < end for start, end in five_utrs_tuple)
+                return UORFCoordinates(
+                    five_utr=five_utrs,
+                    uorf=Region(start= variant_cdna_pos - uorf_length - 1, end= variant_cdna_pos),
+                    ouorf=ouorf,
+                )   

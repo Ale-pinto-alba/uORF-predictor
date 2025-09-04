@@ -1,7 +1,7 @@
 import pytest
 
 from uorf_predictor.instances import FiveUTRCoordinates
-from uorf_predictor.uorf_extractor import fetch_cdna_from_ensembl, uorf_extractor
+from uorf_predictor.uorf_extractor import fetch_cdna_from_ensembl, obtain_uorf_in_five_utr
 
 
 @pytest.mark.online
@@ -24,27 +24,33 @@ def test_fetch_cdna_from_ensembl(
      assert len(cdna) == n_bases
 
 
-def test_uorf_extractor(
-    hr_five_utr: FiveUTRCoordinates, 
-    hr_five_utr_sequence: str,
+def test_uorf_forward_strand(
+    ppp_five_utr_sequence: str,
+    ppp_five_utr: FiveUTRCoordinates,
 ):
-    uorfs = uorf_extractor(five_utr=hr_five_utr, five_sequence=hr_five_utr_sequence)
-    assert len(uorfs) == 4
+     uorf_in_five_utr = obtain_uorf_in_five_utr(
+          five_utrs=ppp_five_utr, 
+          start_uorf=48_872_553, 
+          end_uorf=48_872_634,
+     )
+     
+     uorf = "ATGAACGCGCTGGCCTCCCTAACCGTCCGGACCTGTGATCGCTTCTGGCAGACCGAACCGGCGCTCCTGCCCCCGGGGTGA"
 
-    first_uorf, second_uorf, third_uorf , fourth_uorf = uorfs
+     assert ppp_five_utr_sequence[uorf_in_five_utr.uorf.start: uorf_in_five_utr.uorf.end] == uorf
+     assert uorf_in_five_utr.uorf.end - uorf_in_five_utr.uorf.start == len(uorf)
 
-    assert first_uorf.uorf.start == 16
-    assert first_uorf.uorf.end == 67
-    assert first_uorf.ouorf == False
 
-    assert second_uorf.uorf.start == 302
-    assert second_uorf.uorf.end == 407
-    assert second_uorf.ouorf == False
+def test_uorf_reverse_strand(
+    hr_five_utr_sequence: str,
+    hr_five_utr: FiveUTRCoordinates,
+):
+     uorf_in_five_utr = obtain_uorf_in_five_utr(
+          five_utrs=hr_five_utr, 
+          start_uorf=22_130_604, 
+          end_uorf=22_130_708,
+     )
+     
+     uorf = "ATGGCGCAACCTACGGCCTCGGCCCAGAAGCTGGTGCGGCCGATCCGCGCCGTGTGCCGCATCCTGCAGATCCCGGAGTCCGACCCCTCCAACCTGCGGCCCTAG"
 
-    assert third_uorf.uorf.start == 510
-    assert third_uorf.uorf.end == 576
-    assert third_uorf.ouorf == False
-                    
-    assert fourth_uorf.uorf.start == 606
-    assert fourth_uorf.uorf.end == 623
-    assert fourth_uorf.ouorf == True
+     assert hr_five_utr_sequence[uorf_in_five_utr.uorf.start: uorf_in_five_utr.uorf.end] == uorf
+     assert uorf_in_five_utr.uorf.end - uorf_in_five_utr.uorf.start == len(uorf)
