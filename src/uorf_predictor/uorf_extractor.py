@@ -82,3 +82,15 @@ def obtain_uorf_in_five_utr(five_utrs: FiveUTRCoordinates, start_uorf: int, end_
                     uorf=Region(start= variant_cdna_pos - uorf_length - 1, end= variant_cdna_pos),
                     ouorf=ouorf,
                 )   
+            
+def check_start_and_stop_codon(uorf_sequence: str) -> bool: 
+    """
+    Check if the uORF is correctly framed by a start and a stop codon.
+    """
+    start_codons = ["ATG", "CTG", "GTG", "TTG", "ACG"]
+    stop_codons = ["TAG", "TAA", "TGA"]
+
+    return (
+        any(uorf_sequence.startswith(codon) for codon in start_codons) and
+        any(uorf_sequence.endswith(codon) for codon in stop_codons)
+    )

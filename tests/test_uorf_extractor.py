@@ -1,7 +1,7 @@
 import pytest
 
 from uorf_predictor.instances import FiveUTRCoordinates
-from uorf_predictor.uorf_extractor import fetch_cdna_from_ensembl, obtain_uorf_in_five_utr
+from uorf_predictor.uorf_extractor import fetch_cdna_from_ensembl, obtain_uorf_in_five_utr, check_start_and_stop_codon
 
 
 @pytest.mark.online
@@ -54,3 +54,19 @@ def test_uorf_reverse_strand(
 
      assert hr_five_utr_sequence[uorf_in_five_utr.uorf.start: uorf_in_five_utr.uorf.end] == uorf
      assert uorf_in_five_utr.uorf.end - uorf_in_five_utr.uorf.start == len(uorf)
+
+
+@pytest.mark.parametrize(
+     "uorf_sequence, expected",
+     [
+          ("ATGCCCTAG", True), 
+          ("ATGCCCTCC", False), 
+          ("CTGCCCTAG", True), 
+          ("ACGCCCTAA", True), 
+     ]
+)
+def test_check_start_and_stop_codon(
+     uorf_sequence: str,
+     expected: bool,
+):
+     assert check_start_and_stop_codon(uorf_sequence=uorf_sequence) == expected
