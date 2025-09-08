@@ -1,5 +1,3 @@
-import typing
-
 import requests
 
 from gpsea.model.genome import Region, Strand
