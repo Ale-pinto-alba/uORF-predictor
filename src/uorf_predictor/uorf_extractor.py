@@ -84,6 +84,8 @@ def obtain_uorf_in_five_utr(five_utrs: FiveUTRCoordinates, start_uorf: int, end_
 def check_start_and_stop_codon(uorf_sequence: str) -> bool: 
     """
     Check if the uORF is correctly framed by a start and a stop codon.
+
+    :param uorf_sequence: `str` containing the uORF cDNA sequence.
     """
     start_codons = ["ATG", "CTG", "GTG", "TTG", "ACG"]
     stop_codons = ["TAG", "TAA", "TGA"]

@@ -9,6 +9,9 @@ class RNA_folding:
     """
     `RNA_folding` enables the extraction of features related to RNA folding.
 
+    :param five_utr_sequence: `str` with the 5'UTR cDNA sequence.
+    :param uorf: uORF in the UORFCoordinates format.
+
     For this class, it has been used the Python's API of the package ViennaRNA.
     See here: Lorenz, Ronny and Bernhart, Stephan H. and Höner zu Siederdissen, Christian and Tafer, Hakim and Flamm, Christoph and Stadler, Peter F. and Hofacker, Ivo L.
     ViennaRNA Package 2.0

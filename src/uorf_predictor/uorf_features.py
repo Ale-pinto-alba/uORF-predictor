@@ -13,7 +13,7 @@ def gc_content(five_sequence: str, uorf: UORFCoordinates) -> float:
     If the number of bases chosen ends beyond the 5'UTR end limit (overlapping with the mORF), the number of bases taken will be clipped to
     the length between the uORF stop codon and the mORF start codon.
 
-    :returns: the GC content as a float in range [0, 1].
+    Returns: the GC content as a float in range [0, 1].
     """
     total = uorf.uorf.end - uorf.uorf.start
 

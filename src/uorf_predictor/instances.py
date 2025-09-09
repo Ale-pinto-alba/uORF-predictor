@@ -7,6 +7,8 @@ from gpsea.model.genome import GenomicRegion, Region
 class FiveUTRCoordinates:
     """
     `FiveUTR` is a container for 5'UTR Genomic Regions.
+
+    :param regions: 5'UTR Genomic Region(s).
     """
     def __init__(
         self,
@@ -64,7 +66,7 @@ class UORFCoordinates:
 
     :param transcript: transcript with its corresponding identifier and 5'UTR Genomic Region(s).
     :param uorf: uORF region marked by its start and end nucleotide.
-    :param ouorf: boolean indicating if the uORF overlaps with the mORF.
+    :param ouorf: `Boolean` indicating if the uORF overlaps with the mORF.
     """
     def __init__(
         self,
