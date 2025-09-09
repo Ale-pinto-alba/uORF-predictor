@@ -36,8 +36,8 @@ def obtain_uorf_in_five_utr(five_utrs: FiveUTRCoordinates, start_uorf: int, end_
     Map the genomic coordinates of the uORF into the 5'UTR of the transcript to obtain the relative position within the sequence.
 
     :param five_utrs: 5'UTR Genomic regions of the transcript.
-    :start_uorf: Start position of the uORF.
-    :end_uorf: End position of the uORF.
+    :param start_uorf: Start position of the uORF.
+    :param end_uorf: End position of the uORF.
     """
     five_utrs_tuple = [(region.start, region.end) for region in five_utrs.regions]
     gene_strand = five_utrs.regions[0].strand
