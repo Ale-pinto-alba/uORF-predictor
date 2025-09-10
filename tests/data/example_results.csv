@@ -1,0 +1,2 @@
+tx_id,length,gc,overlapping,kozak_strength,distance_to_cap,intercistronic_distance,cai,codon_freq_std,num_codon,mfe_five,mfe_start,mfe_uorf,atg_unpaired,atg_num_unpaired,unpaired_percentage,shannon_entropy,ubox_sum,ensemble_diversity,start_codon,phylop,phastcons
+ENST00000649746-17256523-17256603,80,0.43209876543209874,False,1,347,676,0.7068355232571196,0.2990234960349921,27.0,-381.70001220703125,-19.899999618530273,-10.100000381469727,False,1,72.8395061728395,5.0810565157223255,11.908910205428606,8.560255510427712,ATG,0.01685,0.001706
