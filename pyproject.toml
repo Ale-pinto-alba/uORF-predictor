@@ -29,6 +29,7 @@ dependencies = [
     "requests >= 2.32.0, <3.0",
     "biopython >= 1.85.0, <2.0",
     "viennarna >= 2.7.0, <3.0",
+    "pyBigWig >= 0.3.24, <0.4",
 ]
 
 [project.optional-dependencies]

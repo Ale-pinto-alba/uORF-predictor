@@ -1,4 +1,6 @@
 import requests
+import pyBigWig
+import numpy as np
 
 from gpsea.model.genome import Region, Strand, GenomicRegion
 from uorf_predictor.instances import FiveUTRCoordinates, UORFCoordinates
@@ -99,9 +101,6 @@ def check_start_and_stop_codon(uorf_sequence: str) -> bool:
         any(uorf_sequence.startswith(codon) for codon in start_codons) and
         any(uorf_sequence.endswith(codon) for codon in stop_codons)
     )
-
-import pyBigWig
-import numpy as np
 
 def get_mean_phastcons_phylop(bigwig_path, chrom, start, end):
     try:
