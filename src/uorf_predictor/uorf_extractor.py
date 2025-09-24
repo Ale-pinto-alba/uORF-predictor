@@ -1,6 +1,6 @@
 import requests
 
-from gpsea.model.genome import Region, Strand
+from gpsea.model.genome import Region, Strand, GenomicRegion
 from uorf_predictor.instances import FiveUTRCoordinates, UORFCoordinates
 
 
@@ -41,6 +41,7 @@ def obtain_uorf_in_five_utr(five_utrs: FiveUTRCoordinates, start_uorf: int, end_
     """
     five_utrs_tuple = [(region.start, region.end) for region in five_utrs.regions]
     gene_strand = five_utrs.regions[0].strand
+    contig = five_utrs.regions[0].contig
 
     uorf_length = end_uorf - start_uorf
     variant_cdna_pos = None
@@ -54,32 +55,36 @@ def obtain_uorf_in_five_utr(five_utrs: FiveUTRCoordinates, start_uorf: int, end_
             cdna_pos += five_utr_region_length
         
         if variant_cdna_pos is not None:
-            ouorf = not any(start <= end_uorf < end for start, end in five_utrs_tuple)
+            if end_uorf >= five_utrs_tuple[-1][1]:
+                ouorf = True
+            else:
+                ouorf = False
             return UORFCoordinates(
                         five_utr= five_utrs,
                         uorf= Region(start= variant_cdna_pos, end= variant_cdna_pos + uorf_length),
                         ouorf= ouorf,
                     )
     else:
-        five_utrs_tuple = [
-            (region.start_on_strand(Strand.POSITIVE), region.end_on_strand(Strand.POSITIVE))
-            for region in five_utrs.regions
-        ]
-
+        five_utrs_tuples_sorted_reversed = sorted(five_utrs_tuple, reverse=True)
+        uorf_genomic_region = GenomicRegion(contig=contig, start=start_uorf, end=end_uorf, strand=Strand.POSITIVE)
         cdna_pos = 0
-        for start, end in sorted(five_utrs_tuple, reverse=True):
+        for start, end in five_utrs_tuples_sorted_reversed:
             five_utr_region_length = end - start
-            if start <= start_uorf <= end:
-                    variant_cdna_pos = cdna_pos + (end - start_uorf + 1)
+            if start <= uorf_genomic_region.start_on_strand(gene_strand) <= end:
+                    variant_cdna_pos = cdna_pos + (end - uorf_genomic_region.start_on_strand(gene_strand))
             cdna_pos += five_utr_region_length
-            
-            if variant_cdna_pos is not None:
-                ouorf = not any(start <= end_uorf < end for start, end in five_utrs_tuple)
-                return UORFCoordinates(
-                    five_utr=five_utrs,
-                    uorf=Region(start= variant_cdna_pos - uorf_length - 1, end= variant_cdna_pos),
-                    ouorf=ouorf,
-                )   
+
+        if variant_cdna_pos is not None:
+            relative_position = cdna_pos - variant_cdna_pos
+            if end_uorf <= five_utrs_tuple[-1][0]:
+                ouorf = True
+            else:
+                ouorf = False
+            return UORFCoordinates(
+                five_utr=five_utrs,
+                uorf=Region(start= relative_position, end= relative_position + uorf_length + 1),
+                ouorf=ouorf,
+            )   
             
 def check_start_and_stop_codon(uorf_sequence: str) -> bool: 
     """
@@ -94,3 +99,21 @@ def check_start_and_stop_codon(uorf_sequence: str) -> bool:
         any(uorf_sequence.startswith(codon) for codon in start_codons) and
         any(uorf_sequence.endswith(codon) for codon in stop_codons)
     )
+
+import pyBigWig
+import numpy as np
+
+def get_mean_phastcons_phylop(bigwig_path, chrom, start, end):
+    try:
+        with pyBigWig.open(bigwig_path) as bw:
+            if chrom not in bw.chroms():
+                raise ValueError(f"Chromosome '{chrom}' not in the BigWig file.")
+
+            scores = bw.values(chrom, start, end, numpy=True)
+            if scores is None:
+                return np.nan
+            
+            scores_filtered = scores[~np.isnan(scores)]
+            return np.mean(scores_filtered) if len(scores_filtered) > 0 else np.nan
+    except Exception as e:
+        return np.nan
